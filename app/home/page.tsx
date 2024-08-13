@@ -15,6 +15,8 @@ interface Item {
   id: number;
   category: string;
   image: string;
+  date: string;
+  contact: string;
 }
 
 const Page: React.FC = () => {
@@ -30,6 +32,19 @@ const Page: React.FC = () => {
   const [reportContact, setReportContact] = useState('');
   const [reportDate, setReportDate] = useState('');
   const [reportCategory, setReportCategory] = useState('');
+
+  const [items, setItems] = useState<Item[]>([
+    { id: 1, category: 'Computers & Electronics', image: '/images/lost-bag.jpg', date: '2024-08-10', contact: '123-456-7890' },
+    { id: 2, category: 'Miscellaneous', image: '/images/lost-bag.jpg', date: '2024-08-11', contact: '098-765-4321' },
+    { id: 3, category: 'Watches & Jewelry', image: '/images/lost-bag.jpg', date: '2024-08-12', contact: '111-222-3333' },
+    { id: 4, category: 'Computers & Electronics', image: '/images/lost-bag.jpg', date: '2024-08-10', contact: '123-456-7890' },
+    { id: 5, category: 'Miscellaneous', image: '/images/lost-bag.jpg', date: '2024-08-11', contact: '098-765-4321' },
+    { id: 6, category: 'Watches & Jewelry', image: '/images/lost-bag.jpg', date: '2024-08-12', contact: '111-222-3333' },
+    { id: 7, category: 'Computers & Electronics', image: '/images/lost-bag.jpg', date: '2024-08-10', contact: '123-456-7890' },
+    { id: 8, category: 'Miscellaneous', image: '/images/lost-bag.jpg', date: '2024-08-11', contact: '098-765-4321' },
+    { id: 9, category: 'Watches & Jewelry', image: '/images/lost-bag.jpg', date: '2024-08-12', contact: '111-222-3333' },
+    // ... other initial items
+  ]);
 
   const handleClaimItem = (item: Item) => {
     setSelectedItem(item);
@@ -49,13 +64,49 @@ const Page: React.FC = () => {
     setIsReportModalOpen(true);
   };
 
-  const handleSubmitReport = () => {
-    console.log('Report submitted:', { image: reportImage, contact: reportContact, date: reportDate, category: reportCategory });
-    setIsReportModalOpen(false);
-    setReportImage(null);
-    setReportContact('');
-    setReportDate('');
-    setReportCategory('');
+  const handleSubmitReport = async () => {
+    if (reportImage && reportContact && reportDate && reportCategory) {
+      const newItem: Item = {
+        id: items.length + 1,
+        category: reportCategory,
+        image: URL.createObjectURL(reportImage),
+        date: reportDate,
+        contact: reportContact,
+      };
+      
+      setItems(prevItems => [newItem, ...prevItems]);
+      
+      console.log('Report submitted:', newItem);
+
+      try {
+        const response = await fetch('/api/send-sms', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            to: reportContact,
+            message: `Your lost item report has been submitted. Category: ${reportCategory}, Date: ${reportDate}. We'll contact you if we find a match.`
+          }),
+        });
+
+        if (response.ok) {
+          console.log('SMS notification sent successfully');
+        } else {
+          console.error('Failed to send SMS notification');
+        }
+      } catch (error) {
+        console.error('Error sending SMS notification:', error);
+      }
+
+      setIsReportModalOpen(false);
+      setReportImage(null);
+      setReportContact('');
+      setReportDate('');
+      setReportCategory('');
+    } else {
+      alert('Please fill in all fields');
+    }
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,16 +115,16 @@ const Page: React.FC = () => {
     }
   };
 
-  const items: Item[] = [
-    { id: 1, category: 'Computers & Electronics', image: '/images/lost-bag.jpg' },
-    { id: 2, category: 'Miscellaneous', image: '/images/lost-bag.jpg' },
-    { id: 3, category: 'Watches & Jewelry', image: '/images/lost-bag.jpg' },
-    { id: 4, category: 'Watches & Jewelry', image: '/images/lost-bag.jpg' },
-    { id: 5, category: 'Watches & Jewelry', image: '/images/lost-bag.jpg' },
-    { id: 6, category: 'Computers & Electronics', image: '/images/lost-bag.jpg' },
-    { id: 7, category: 'Computers & Electronics', image: '/images/lost-bag.jpg' },
-    { id: 8, category: 'Computers & Electronics', image: '/images/lost-bag.jpg' },
-  ]
+  // const items: Item[] = [
+  //   { id: 1, category: 'Computers & Electronics', image: '/images/lost-bag.jpg' },
+  //   { id: 2, category: 'Miscellaneous', image: '/images/lost-bag.jpg' },
+  //   { id: 3, category: 'Watches & Jewelry', image: '/images/lost-bag.jpg' },
+  //   { id: 4, category: 'Watches & Jewelry', image: '/images/lost-bag.jpg' },
+  //   { id: 5, category: 'Watches & Jewelry', image: '/images/lost-bag.jpg' },
+  //   { id: 6, category: 'Computers & Electronics', image: '/images/lost-bag.jpg' },
+  //   { id: 7, category: 'Computers & Electronics', image: '/images/lost-bag.jpg' },
+  //   { id: 8, category: 'Computers & Electronics', image: '/images/lost-bag.jpg' },
+  // ]
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
