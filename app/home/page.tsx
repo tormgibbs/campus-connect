@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import ClaimModal from './ClaimModal';
+import ReportModal from './ReportModal';
 
 interface Item {
   id: number;
@@ -23,6 +25,12 @@ const Page: React.FC = () => {
   const [claimContact, setClaimContact] = useState('');
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [reportImage, setReportImage] = useState<File | null>(null);
+  const [reportContact, setReportContact] = useState('');
+  const [reportDate, setReportDate] = useState('');
+  const [reportCategory, setReportCategory] = useState('');
+
   const handleClaimItem = (item: Item) => {
     setSelectedItem(item);
     setIsClaimModalOpen(true);
@@ -35,6 +43,25 @@ const Page: React.FC = () => {
     setClaimDescription('');
     setClaimContact('');
     setSelectedItem(null);
+  };
+
+  const handleReportItem = () => {
+    setIsReportModalOpen(true);
+  };
+
+  const handleSubmitReport = () => {
+    console.log('Report submitted:', { image: reportImage, contact: reportContact, date: reportDate, category: reportCategory });
+    setIsReportModalOpen(false);
+    setReportImage(null);
+    setReportContact('');
+    setReportDate('');
+    setReportCategory('');
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setReportImage(event.target.files[0]);
+    }
   };
 
   const items: Item[] = [
@@ -51,8 +78,8 @@ const Page: React.FC = () => {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-xl font-semibold">We found <span className="font-bold">185</span> unclaimed items.</h1>
-        <Button className="bg-yellow-400 hover:bg-yellow-500 text-black">File A Claim</Button>
+        <h1 className="text-xl font-semibold">Let's find</h1>
+        <Button className="bg-yellow-400 hover:bg-yellow-500 text-black" onClick={handleReportItem}>Report Item</Button>
       </div>
 
       <div className="flex space-x-4 mb-6">
@@ -99,37 +126,29 @@ const Page: React.FC = () => {
         ))}
       </div>
 
-      <Dialog open={isClaimModalOpen} onOpenChange={setIsClaimModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Claim Item</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                placeholder="Provide a detailed description of the item..."
-                value={claimDescription}
-                onChange={(e) => setClaimDescription(e.target.value)}
-              />
-            </div>
-            <div>
-              <Label htmlFor="contact">Contact Information</Label>
-              <Input
-                id="contact"
-                placeholder="Your email or phone number"
-                value={claimContact}
-                onChange={(e) => setClaimContact(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsClaimModalOpen(false)}>Cancel</Button>
-            <Button onClick={handleSubmitClaim}>Submit Claim</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ClaimModal
+        isOpen={isClaimModalOpen}
+        onClose={() => setIsClaimModalOpen(false)}
+        claimDescription={claimDescription}
+        setClaimDescription={setClaimDescription}
+        claimContact={claimContact}
+        setClaimContact={setClaimContact}
+        handleSubmitClaim={handleSubmitClaim}
+      />
+
+      <ReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        reportImage={reportImage}
+        setReportImage={setReportImage}
+        reportContact={reportContact}
+        setReportContact={setReportContact}
+        reportDate={reportDate}
+        setReportDate={setReportDate}
+        reportCategory={reportCategory}
+        setReportCategory={setReportCategory}
+        handleSubmitReport={handleSubmitReport}
+      />
     </div>
   );
 }
